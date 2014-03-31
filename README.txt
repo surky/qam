@@ -1,0 +1,1 @@
+Celem projektu jest opracowanie demonstratora modulacji QAM. W efekcie ma powstaæ aplikacja z graficznym interfejsem u¿ytkownika, która pozwoli na obejrzenie kluczowych sygna³ów w modulatorze / demodulatorze, symulacjê transmisji przez kana³ AWGN, wizualizacjê oraz porównanie efektywnoœci ró¿nych konstelacji a tak¿e ró¿nych wartoœciowoœci modulacji.
