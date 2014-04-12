@@ -1,0 +1,46 @@
+M=2;
+data = randi(0:1,1,64);
+k = 100; % długość bitu
+bit1=ones(1,k);
+x=ones(1,4*k);
+bit0=0*bit1;
+I=[];
+Q=[];
+for n=1:2*M:length(data)
+    if data(n:n+1)==[0 0]
+        I=[I 1*x];
+    else if data(n:n+1)==[0 1]
+            I=[I 3*x];
+        else if data(n:n+1)==[1 0]
+                I=[I (-1)*x];
+            else if data(n:n+1)==[1 1]
+                    I=[I (-3)*x];
+                end
+            end
+        end
+    end
+
+    
+   if data(n+2:n+3)==[0 0]
+        Q=[Q 1*x];
+    else if data(n+2:n+3)==[0 1]
+            Q=[Q 3*x];
+        else if data(n+2:n+3)==[1 0]
+                Q=[Q (-1)*x];
+            else if data(n+2:n+3)==[1 1]
+                    Q=[Q (-3)*x];
+                end
+            end
+        end
+    end
+    
+    
+    
+    
+end
+w=150;
+t=0:2*pi/k:2*pi*length(data)-2*pi/k;
+sygnal= I.*cos(w*t) - Q.*sin(w*t);
+plot(sygnal)
+
+sygawgn=awgn(sygnal,3,'measured');
