@@ -1,6 +1,6 @@
 clear all
 close all
-numberOfBits = 16;
+numberOfBits = 64;
 x = rand(1, numberOfBits);
 x( x < 0.5 ) = 0;
 x( x >= 0.5 ) = 1;
@@ -52,19 +52,24 @@ for i = 1:4:length(x)
 
     % Mapping
     mappedSymbols((i - 1)/4 + 1) = mappingTable_16type3( symbolIndex + 1);
+    
 end
 
-sygnal = [];
-s1 = [];
-s2 = [];
-t = 0:2*pi/100:2*pi*16-2*pi/100;
-for j=1:1:length(mappedSymbols)
-    
-    s1=real(mappedSymbols(j))*cos(t);
-    s2=imag(mappedSymbols(j))*sin(t);
-    sygnal = [sygnal s1-s2];
-  
+symbol=ones(1,400);
+s=[];
+for j= 1:1:length(mappedSymbols)
+   
+    s=[s symbol*mappedSymbols(j)];
     
 end
+
+t = 0:2*pi/100:2*pi*length(x)-2*pi/100;
+sygnal = real(s).*cos(t)-imag(s).*sin(t);
 figure(1)
 plot(sygnal);
+Vnx=sygnal.*cos(t);
+Vny=sygnal.*-1.*sin(t);
+figure(2)
+plot(Vnx)
+figure(3)
+plot(Vny)
