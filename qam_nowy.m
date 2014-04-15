@@ -1,7 +1,7 @@
 clear all
 close all
-numberOfBits = 8;
-x=[0 0 0 1 0 0 1 0];
+numberOfBits = 16;
+x=[1 0 0 1 1 1 0 1 0 1 1 0 1 1 0 1];
 %x = rand(1, numberOfBits);
 %x( x < 0.5 ) = 0;
 %x( x >= 0.5 ) = 1;
@@ -69,14 +69,14 @@ for j= 1:1:length(mappedSymbols)
 end
 
 t = 0:2*pi/100:2*pi*length(x)-2*pi/100;
-qam = real(s).*cos(t)-imag(s).*sin(t);
+qam = real(s).*cos(10*t)-imag(s).*sin(10*t);
 
 SNR = 500;
 qam_awgn=awgn(qam,SNR,'measured');
 figure(1)
 plot(qam_awgn);
-I=qam_awgn.*cos(t);
-Q=qam_awgn.*-1.*sin(t);
+I=qam_awgn.*cos(10*t);
+Q=qam_awgn.*-1.*sin(10*t);
 
 % Low pass filtering with a Butterworth filter
 [b,a]=butter(2,0.04);
@@ -88,5 +88,4 @@ figure(2)
 plot(Hx)
 figure(3)
 plot(Hy)
-
 
