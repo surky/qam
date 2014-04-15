@@ -1,10 +1,11 @@
 clear all
 close all
-numberOfBits = 64;
-x = rand(1, numberOfBits);
-x( x < 0.5 ) = 0;
-x( x >= 0.5 ) = 1;
-
+numberOfBits = 8;
+x=[0 0 0 1 0 0 1 0];
+%x = rand(1, numberOfBits);
+%x( x < 0.5 ) = 0;
+%x( x >= 0.5 ) = 1;
+%x=fliplr(x);
 
 % Mapa 16QAM pierscieniowa
 % promienie pierscieni
@@ -42,7 +43,7 @@ if mod(numberOfBits, 4) ~= 0
     error('numberOfBits must be a multiple of 4.');
 end
 mappedSymbols = zeros(1, numberOfBits / 4);
-
+const = 2; %wybor konstelacji 1-pierscieniowa 2-kwadratowa
 % Map bits to symbols
 for i = 1:4:length(x)
 
@@ -50,9 +51,13 @@ for i = 1:4:length(x)
 
     symbolIndex = 2^3 * symbolBits(1) + 2^2 * symbolBits(2) + 2^1 * symbolBits(3) + 2^0 * symbolBits(4);
 
+    if(const == 1)
     % Mapping
-    mappedSymbols((i - 1)/4 + 1) = mappingTable_16type3( symbolIndex + 1);
-    
+    mappedSymbols((i - 1)/4 + 1) = mappingTable( symbolIndex + 1);
+    elseif (const == 2)
+        mappedSymbols((i - 1)/4 + 1) = mappingTable_16type3( symbolIndex + 1); 
+    end
+
 end
 
 symbol=ones(1,400);
@@ -64,12 +69,24 @@ for j= 1:1:length(mappedSymbols)
 end
 
 t = 0:2*pi/100:2*pi*length(x)-2*pi/100;
-sygnal = real(s).*cos(t)-imag(s).*sin(t);
+qam = real(s).*cos(t)-imag(s).*sin(t);
+
+SNR = 500;
+qam_awgn=awgn(qam,SNR,'measured');
 figure(1)
-plot(sygnal);
-Vnx=sygnal.*cos(t);
-Vny=sygnal.*-1.*sin(t);
+plot(qam_awgn);
+I=qam_awgn.*cos(t);
+Q=qam_awgn.*-1.*sin(t);
+
+% Low pass filtering with a Butterworth filter
+[b,a]=butter(2,0.04);
+Hx=2.*filter(b,a,I);
+Hy=2.*filter(b,a,Q);
+ML=length(Hx);
+
 figure(2)
-plot(Vnx)
+plot(Hx)
 figure(3)
-plot(Vny)
+plot(Hy)
+
+
