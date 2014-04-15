@@ -1,9 +1,21 @@
+clear all
+close all
 M=2;
-data = randi(0:1,1,64);
+data = randi(0:1,1,1024);
+%data = [1 0 0 1 1 1 0 1 0 1 1 0 1 1 0 1];
 k = 100; % długość bitu
 bit1=ones(1,k);
 x=ones(1,4*k);
 bit0=0*bit1;
+msg=[ ];
+for p=1:1:length(data)
+    if data(p)==1
+        msg=[msg bit1];
+    else
+        msg=[msg bit0];
+    end
+end
+
 I=[];
 Q=[];
 for n=1:2*M:length(data)
@@ -38,9 +50,173 @@ for n=1:2*M:length(data)
     
     
 end
-w=150;
+fc=15;
+fs=1000;
 t=0:2*pi/k:2*pi*length(data)-2*pi/k;
-sygnal= I.*cos(w*t) - Q.*sin(w*t);
-plot(sygnal)
+sygnal= I.*cos(2*pi*fs*fc*t) - Q.*sin(2*pi*fs*fc*t);
+%figure(1)
+%plot(sygnal)
 
-sygawgn=awgn(sygnal,3,'measured');
+sygawgn=awgn(sygnal,1,'measured');
+
+
+%x1 = sygnal.*cos(2*pi*fc*fs*t);
+%x2 = sygnal.*sin(2*pi*fc*fs*t);
+%[b,a] = butter(5,fc*2/fs);
+%x1 = filtfilt(b,a,x1);
+%x2 = filtfilt(b,a,x2);
+%[x1,x2] = demod(sygnal,fc,fs,'qam');
+%figure(2)
+%plot(x1)
+
+
+Vnx=sygawgn.*cos(2*pi*fs*fc*t);
+Vny=sygawgn.*-1.*sin(2*pi*fs*fc*t);
+
+
+
+
+[b,a]=butter(3,0.015);
+Hx=2.*filter(b,a,Vnx);
+Hy=2.*filter(b,a,Vny);
+ML=length(Hx);
+
+%figure(2)
+%plot(Hx)
+%figure(3)
+%plot(Hy)
+
+Idem=[ ];
+Qdem=[ ];
+for k=1:400:length(Hx)-399
+    Idem=[Idem mean(Hx(k:k+399))];
+    Qdem=[Qdem mean(Hy(k:k+399))];
+end
+
+
+%figure(4)
+%plot(Idem,Qdem,'or',I,Q,'xb')
+%set(gca,'XTick',-4:4)
+%set(gca,'YTick',-4:4)
+%grid
+
+for p=1:1:length(Idem)
+    if Idem(p)>=2
+        Idem(p)=3;
+    end
+    if Idem(p)>=0 && Idem(p)<2
+        Idem(p)=1;
+    end
+    if Idem(p)<=(-2)
+        Idem(p)=-3;
+    end
+    if Idem(p)<0 && Idem(p)>-(2)
+        Idem(p)=-1;
+    end
+    
+    if Qdem(p)>=2
+        Qdem(p)=3;
+    end
+    if Qdem(p)>=0 && Qdem(p)<2
+        Qdem(p)=1;
+    end
+    if Qdem(p)<=(-2)
+        Qdem(p)=-3;
+    end
+    if Qdem(p)<0 && Qdem(p)>-(2)
+        Qdem(p)=-1;
+    end
+end
+
+%figure(5)
+%plot(msg)
+
+msgdem=[];
+
+for p=1:1:length(Idem)
+    if Idem(p)==-3 && Qdem(p)==-3
+        msgdem=[msgdem 1 1 1 1];
+    end
+    
+    if Idem(p)==-3 && Qdem(p)==-1
+        msgdem=[msgdem 1 1 1 0];
+    end
+    
+    if Idem(p)==-3 && Qdem(p)==1
+        msgdem=[msgdem 1 1 0 0];
+    end
+    
+    if Idem(p)==-3 && Qdem(p)==3
+        msgdem=[msgdem 1 1 0 1];
+    end
+
+    if Idem(p)==-1 && Qdem(p)==-3
+        msgdem=[msgdem 1 0 1 1];
+    end
+    
+    if Idem(p)==-1 && Qdem(p)==-1
+        msgdem=[msgdem 1 0 1 0];
+    end
+    
+    if Idem(p)==-1 && Qdem(p)==1
+        msgdem=[msgdem 1 1 0 0];
+    end
+    
+    if Idem(p)==-1 && Qdem(p)==3
+        msgdem=[msgdem 1 0 0 1];
+    end
+    
+    if Idem(p)==1 && Qdem(p)==-3
+        msgdem=[msgdem 0 0 1 1];
+    end
+    
+    if Idem(p)==1 && Qdem(p)==-1
+        msgdem=[msgdem 0 0 1 0];
+    end
+    
+    if Idem(p)==1 && Qdem(p)==1
+        msgdem=[msgdem 0 0 0 0];
+    end
+    
+    if Idem(p)==1 && Qdem(p)==3
+        msgdem=[msgdem 0 0 0 1];
+    end
+    
+    if Idem(p)==3 && Qdem(p)==-3
+        msgdem=[msgdem 0 1 1 1];
+    end
+    
+    if Idem(p)==3 && Qdem(p)==-1
+        msgdem=[msgdem 0 1 1 0];
+    end
+    
+    if Idem(p)==3 && Qdem(p)==1
+        msgdem=[msgdem 0 1 0 0];
+    end
+    
+    if Idem(p)==3 && Qdem(p)==3
+        msgdem=[msgdem 0 1 0 1];
+    end
+    
+end
+
+
+
+msgdbits=[ ];
+for p=1:1:length(data)
+    if data(p)==1
+        msgdbits=[msgdbits bit1];
+    else
+        msgdbits=[msgdbits bit0];
+    end
+end
+
+%figure(6)
+%plot(msgdbits)
+
+berr=0;
+for p=1:length(data)
+    if mod(data(p),msgdem(p))==1
+        berr=berr+1;
+    end
+end
