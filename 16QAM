@@ -1,0 +1,145 @@
+function [ output_args ] = 16QAM( ConstelationType,  MessageLength, SignalToNoiseRatio )
+%ConstelationType - parametr wyboru pomiedzy konstelacja kwadratowa a
+%pierscieniowa
+%
+%MessageLength - parametr okreslajacy dlugosc wprowadzanej wiadomosci
+%
+%SignalToNoiseRatio - parametr okreslajacy wartosc SNR
+
+constelationType = ConstelationType;
+sizeOfConstellation = 2;
+numberOfBits = MessageLength;
+
+%Generowanie wiadomosci
+generatedData = generator_wiadomosci(numberOfBits,sizeOfConstellation); 
+
+% Mapa 16QAM pierscieniowa
+% promienie pierscieni
+r1 = 1;
+r2 = 2;
+mappingTable_1(1) = r1 * exp(1i* 0);
+mappingTable_1(2) = r1 * exp(1i* pi/4);
+mappingTable_1(3) = r1 * exp(1i* 3*pi/4);
+mappingTable_1(4) = r1 * exp(1i* pi/2);
+mappingTable_1(5) = r1 * exp(1i* 7*pi/4);
+mappingTable_1(6) = r1 * exp(1i* 3*pi/2);
+mappingTable_1(7) = r1 * exp(1i* pi);
+mappingTable_1(8) = r1 * exp(1i* 5*pi/4);
+mappingTable_1(9:16) = mappingTable_1(1:8) ./ r1 .* r2;
+
+% Mapa 16QAM kwadratowa
+mappingTable_2(1)  =   1 + 1*1i;
+mappingTable_2(2)  =   3 + 1*1i;
+mappingTable_2(3)  =   1 + 3*1i;
+mappingTable_2(4)  =   3 + 3*1i;     
+mappingTable_2(5)  =   1 + (-1)*1i;
+mappingTable_2(6)  =   1 + (-3)*1i; 
+mappingTable_2(7)  =   3 + (-1)*1i; 
+mappingTable_2(8)  =   3 + (-3)*1i;
+mappingTable_2(9)  =  -1 + 1*1i;
+mappingTable_2(10) =  -1 + 3*1i;
+mappingTable_2(11) =  -3 + 1*1i;
+mappingTable_2(12) =  -3 + (3)*1i;
+mappingTable_2(13) =  -1 + (-1)*1i;
+mappingTable_2(14) =  -3 + (-1)*1i;
+mappingTable_2(15) =  -1 + (-3)*1i;
+mappingTable_2(16) =  -3 + (-3)*1i;
+
+
+mappedSymbols = zeros(1, numberOfBits / 4);
+% Mapowanie bitów
+for i = 1:4:length(generatedData)
+
+    symbolBits = generatedData(i:i+3);
+    symbolIndex = 2^3 * symbolBits(1) + 2^2 * symbolBits(2) + 2^1 * symbolBits(3) + 2^0 * symbolBits(4);
+
+    if(constelationType == 1)
+    % Mapowanie konstelacja pierscieniowa
+    mappedSymbols((i - 1)/4 + 1) = mappingTable_1( symbolIndex + 1);
+    elseif (constelationType == 2)
+    % Mapowanie konstelacja kwadratowa
+    mappedSymbols((i - 1)/4 + 1) = mappingTable_2( symbolIndex + 1); 
+    end
+
+end
+clear i
+
+%Ustalanie długości transmitowanych symboli dla możliwości obserwacji modulacji
+
+symbol=ones(1,400);
+signal= [];
+for i= 1:1:length(mappedSymbols)
+   
+    signal=[signal symbol*mappedSymbols(i)];
+    
+end
+
+%Modulacja QAM
+fc = 10; %czestotliwosc nosna
+t = 0:2*pi/100:2*pi*length(generatedData)-2*pi/100;
+qam = real(signal).*cos(fc*t)-imag(signal).*sin(fc*t);
+
+figure(1)
+plot(qam);
+
+%Symulacja kanału AWGN
+SNR = SignalToNoiseRatio; 
+qamAWGN=awgn(qam,SNR,'measured');
+
+
+figure(2)
+plot(qamAWGN);
+
+%Demodulacja koherentna
+I=qamAWGN.*cos(fc*t);
+Q=qamAWGN.*-1.*sin(fc*t);
+
+% Filtrowanie za pomocą filtru Butterwortha
+[b,a]=butter(2,0.04);
+Idem=2.*filter(b,a,I);
+Qdem=2.*filter(b,a,Q);
+
+
+figure(4)
+plot(Idem,Qdem,'.',real(signal),imag(signal),'or')
+grid;
+
+%demapowanie dla konstelacji typu kwadratowego
+for p=1:1:length(Idem)
+    if Idem(p)>=2
+        Idem(p)=3;
+    end
+    if Idem(p)>=0 && Idem(p)<2
+        Idem(p)=1;
+    end
+    if Idem(p)<=(-2)
+        Idem(p)=-3;
+    end
+    if Idem(p)<0 && Idem(p)>-(2)
+        Idem(p)=-1;
+    end
+    
+    if Qdem(p)>=2
+        Qdem(p)=3;
+    end
+    if Qdem(p)>=0 && Qdem(p)<2
+        Qdem(p)=1;
+    end
+    if Qdem(p)<=(-2)
+        Qdem(p)=-3;
+    end
+    if Qdem(p)<0 && Qdem(p)>-(2)
+        Qdem(p)=-1;
+    end
+end
+
+
+
+figure(5)
+plot(Idem,Qdem,'.',real(signal),imag(signal),'or')
+grid;
+
+
+
+end
+
