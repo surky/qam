@@ -1,0 +1,16 @@
+function [ msg ] = generator_wiadomosci( msg_length, const_size )
+%Jako parametr podajemy długość wiadomości ( liczbe bitów ) oraz rozmiar
+%konstalacji 1 = 4-QAM, 2 = 16-QAM, 3 = 64-QAM.
+%funkcja dla nieparzystej liczby bitów uzepełnia wiadomośc zerami 
+if(rem(msg_length,2*const_size)==0)
+    len=msg_length;
+else
+    len=msg_length+(2*const_size-rem(msg_length,2*const_size));
+end
+    
+
+msg = randi(0:1,1,len); %% generowanie losowej wiadomosci;
+
+
+end
+
