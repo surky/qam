@@ -1,0 +1,208 @@
+#include <windows.h>
+#include "main.h"
+
+/*  Declare Windows procedure  */
+LRESULT CALLBACK WindowProcedure (HWND, UINT, WPARAM, LPARAM);
+
+/*  Make the class name into a global variable  */
+char szClassName[ ] = "WindowsApp";
+
+HWND jeden, dwa,trzy,cztery,piec,szesc,siedem,osiem,dziewiec,zero, dodaj, odejmij,mnoz,wynik, wartosc;         // Kontrolki
+char cBuf[25];
+int WINAPI WinMain (HINSTANCE hThisInstance,
+                    HINSTANCE hPrevInstance,
+                    LPSTR lpszArgument,
+                    int nFunsterStil)
+
+{
+    HWND hwnd;               /* This is the handle for our window */
+    MSG messages;            /* Here messages to the application are saved */
+    WNDCLASSEX wincl;        /* Data structure for the windowclass */
+    HMENU menu;
+
+    /* The Window structure */
+    wincl.hInstance = hThisInstance;
+    wincl.lpszClassName = szClassName;
+    wincl.lpfnWndProc = WindowProcedure;      /* This function is called by windows */
+    wincl.style = CS_DBLCLKS;                 /* Catch double-clicks */
+    wincl.cbSize = sizeof (WNDCLASSEX);
+
+    /* Use default icon and mouse-pointer */
+    wincl.hIcon = LoadIcon (NULL, IDI_APPLICATION);
+    wincl.hIconSm = LoadIcon (NULL, IDI_APPLICATION);
+    wincl.hCursor = LoadCursor (NULL, IDC_ARROW);
+    wincl.lpszMenuName = NULL;                 /* No menu */
+    wincl.cbClsExtra = 0;                      /* No extra bytes after the window class */
+    wincl.cbWndExtra = 0;                      /* structure or the window instance */
+    /* Use Windows's default color as the background of the window */
+    wincl.hbrBackground = (HBRUSH) COLOR_BACKGROUND;
+
+    /* Register the window class, and if it fails quit the program */
+    if (!RegisterClassEx (&wincl))
+        return 0;
+
+    /* The class is registered, let's create the program*/
+    hwnd = CreateWindowEx (
+           0,                   /* Extended possibilites for variation */
+           szClassName,         /* Classname */
+           "Windows App",       /* Title Text */
+           WS_OVERLAPPEDWINDOW, /* default window */
+           CW_USEDEFAULT,       /* Windows decides the position */
+           CW_USEDEFAULT,       /* where the window ends up on the screen */
+           544,                 /* The programs width */
+           425,                 /* and height in pixels */
+           HWND_DESKTOP,        /* The window is a child-window to desktop */
+           NULL,                /* No menu */
+           hThisInstance,       /* Program Instance handler */
+           NULL                 /* No Window Creation data */
+           );
+
+    /* Make the window visible on the screen */
+    ShowWindow (hwnd, nFunsterStil);
+
+    menu = LoadMenu(hThisInstance, MAKEINTRESOURCE(ID_MENU));
+    SetMenu(hwnd, menu);
+
+// Kontrolki
+jeden = CreateWindowEx( 0, "BUTTON", "1", WS_CHILD | WS_VISIBLE, 50, 75, 50, 50, hwnd, (HMENU) IDB_ONE, hThisInstance, NULL );
+dwa = CreateWindowEx( 0, "BUTTON", "2", WS_CHILD | WS_VISIBLE, 120, 75, 50, 50, hwnd, (HMENU) IDB_TWO, hThisInstance, NULL );
+trzy = CreateWindowEx( 0, "BUTTON", "3", WS_CHILD | WS_VISIBLE, 190, 75, 50, 50, hwnd, (HMENU) IDB_THREE, hThisInstance, NULL );
+cztery = CreateWindowEx( 0, "BUTTON", "4", WS_CHILD | WS_VISIBLE, 50, 150, 50, 50, hwnd, (HMENU) IDB_FOUR, hThisInstance, NULL );
+piec = CreateWindowEx( 0, "BUTTON", "5", WS_CHILD | WS_VISIBLE, 120, 150, 50, 50, hwnd, (HMENU) IDB_FIVE, hThisInstance, NULL );
+szesc = CreateWindowEx( 0, "BUTTON", "6", WS_CHILD | WS_VISIBLE, 190, 150, 50, 50, hwnd, (HMENU) IDB_SIX, hThisInstance, NULL );
+siedem = CreateWindowEx( 0, "BUTTON", "7", WS_CHILD | WS_VISIBLE, 50, 225, 50, 50, hwnd, (HMENU) IDB_SEVEN, hThisInstance, NULL );
+osiem = CreateWindowEx( 0, "BUTTON", "8", WS_CHILD | WS_VISIBLE, 120, 225, 50, 50, hwnd, (HMENU) IDB_EIGHT, hThisInstance, NULL );
+dziewiec = CreateWindowEx( 0, "BUTTON", "9", WS_CHILD | WS_VISIBLE, 190, 225, 50, 50, hwnd, (HMENU) IDB_NINE, hThisInstance, NULL );
+zero = CreateWindowEx( 0, "BUTTON", "0", WS_CHILD | WS_VISIBLE, 50, 300, 50, 50, hwnd, (HMENU) IDB_ZERO, hThisInstance, NULL );
+dodaj = CreateWindowEx( 0, "BUTTON", "+", WS_CHILD | WS_VISIBLE, 260, 75, 50, 50, hwnd, (HMENU) IDB_ADD, hThisInstance, NULL );
+odejmij = CreateWindowEx( 0, "BUTTON", "-", WS_CHILD | WS_VISIBLE, 260, 150, 50, 50, hwnd, (HMENU) IDB_SUB, hThisInstance, NULL );
+mnoz = CreateWindowEx( 0, "BUTTON", "*", WS_CHILD | WS_VISIBLE, 260, 225, 50, 50, hwnd, (HMENU) IDB_MUL, hThisInstance, NULL );
+wynik = CreateWindowEx( 0, "BUTTON", "=", WS_CHILD | WS_VISIBLE, 120, 300, 200, 50, hwnd, (HMENU) IDB_RES, hThisInstance, NULL );
+wartosc = CreateWindowEx( WS_EX_CLIENTEDGE, "EDIT", NULL, WS_CHILD | WS_VISIBLE | WS_BORDER, 50, 25, 260, 25, hwnd, (HMENU) IDB_OUT, hThisInstance, NULL );
+
+    /* Run the message loop. It will run until GetMessage() returns 0 */
+    while (GetMessage (&messages, NULL, 0, 0))
+    {
+        /* Translate virtual-key messages into character messages */
+        TranslateMessage(&messages);
+        /* Send message to WindowProcedure */
+        DispatchMessage(&messages);
+    }
+
+    /* The program return-value is 0 - The value that PostQuitMessage() gave */
+    return messages.wParam;
+}
+
+// Dzialania
+int a, b, c;
+int click=1;
+bool dzialanie,dodawanie,odejmowanie,mnozenie;
+char str[20];
+
+/*  This function is called by the Windows function DispatchMessage()  */
+LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    switch (message)                  /* handle the messages */
+    {
+    case WM_COMMAND:                  // Przyciski
+         switch( wParam )
+         {
+         case IDB_ONE:
+              strcat(&cBuf[0], "1");
+              if (dzialanie) b = atoi(cBuf); else a = atoi(cBuf);
+               SetWindowText( wartosc, cBuf );
+              break;
+         case IDB_TWO:                // 2
+              strcat(&cBuf[0], "2");
+              if (dzialanie) b = atoi(cBuf); else a = atoi(cBuf);
+               SetWindowText( wartosc, cBuf );
+              break;
+         case IDB_THREE:                // 3
+              strcat(&cBuf[0], "3");
+              if (dzialanie) b = atoi(cBuf); else a = atoi(cBuf);
+               SetWindowText( wartosc, cBuf );
+              break;
+         case IDB_FOUR:
+                strcat(&cBuf[0], "4");
+              if (dzialanie) b = atoi(cBuf); else a = atoi(cBuf);
+              SetWindowText( wartosc, cBuf );
+              break;
+        case IDB_FIVE:                // 5
+        strcat(&cBuf[0], "5");
+              if (dzialanie) b = atoi(cBuf); else a = atoi(cBuf);;
+              SetWindowText( wartosc, cBuf );
+              break;   
+         case IDB_SIX:                // 6
+         strcat(&cBuf[0], "6");
+              if (dzialanie) b = atoi(cBuf); else a = atoi(cBuf);
+               SetWindowText( wartosc, cBuf );
+              break;
+         case IDB_SEVEN:                // 7
+         strcat(&cBuf[0], "7");
+              if (dzialanie) b = atoi(cBuf); else a = atoi(cBuf);
+               SetWindowText( wartosc, cBuf );
+              break;
+         case IDB_EIGHT:                // 8
+              strcat(&cBuf[0], "8");
+              if (dzialanie) b = atoi(cBuf); else a = atoi(cBuf);
+               SetWindowText( wartosc, cBuf );
+              break;
+         case IDB_NINE:                // 9
+              strcat(&cBuf[0], "9");
+              if (dzialanie) b = atoi(cBuf); else a = atoi(cBuf);
+              SetWindowText( wartosc, cBuf );
+              
+              break;
+         case IDB_ZERO:      
+              strcat(&cBuf[0], "0");          // 0
+              if (dzialanie) b = atoi(cBuf); else a = atoi(cBuf);
+              SetWindowText( wartosc, cBuf );
+              break;
+         case IDB_ADD:                // +
+              dzialanie = true;
+              dodawanie = true;
+              SetWindowText( wartosc, "+" );
+              memset(cBuf, 0, sizeof cBuf);
+              break;
+         case IDB_SUB:                // -
+              dzialanie = true;
+              odejmowanie= true;
+              SetWindowText( wartosc, "-" );
+              memset(cBuf, 0, sizeof cBuf);
+              break;
+         case IDB_MUL:                // *
+              dzialanie = true;
+              mnozenie= true;
+              memset(cBuf, 0, sizeof cBuf);
+              SetWindowText( wartosc, "*" );
+              break;
+              
+         case IDB_RES:                // =
+              if (dodawanie) c = a + b;
+              if (odejmowanie) c = a - b;
+              if (mnozenie) c = a * b;
+              SetWindowText( wartosc, itoa(c, str, 10));
+              dzialanie = false;
+              dodawanie = false; 
+              odejmowanie = false;
+              mnozenie = false;
+              a = 0; b = 0; c = 0;memset(cBuf, 0, sizeof cBuf);
+              break;              
+         }
+         break;
+    
+        case IDM_FILENEW:
+             MessageBox( hwnd, (LPSTR) "Function Not Yet Implemented.",
+                              (LPSTR) szClassName,
+                              MB_ICONINFORMATION | MB_OK );
+//             return 0;
+             break;
+        case WM_DESTROY:
+            PostQuitMessage (0);       /* send a WM_QUIT to the message queue */
+            break;
+        default:                      /* for messages that we don't deal with */
+            return DefWindowProc (hwnd, message, wParam, lParam);
+    }
+
+    return 0;
+}
